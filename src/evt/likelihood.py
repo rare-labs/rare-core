@@ -29,3 +29,23 @@ def gpd_log_likelihood(excesses: np.ndarray, scale: float, xi: float) -> float:
 
 def aic(log_likelihood: float, *, n_params: int) -> float:
     return float(2 * n_params - 2 * log_likelihood)
+
+
+def gev_rvs(
+    n: int,
+    location: float,
+    scale: float,
+    xi: float,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    return np.asarray(
+        genextreme.rvs(c=-xi, loc=location, scale=scale, size=n, random_state=rng),
+        dtype=np.float64,
+    )
+
+
+def gpd_rvs(n: int, scale: float, xi: float, rng: np.random.Generator) -> np.ndarray:
+    return np.asarray(
+        genpareto.rvs(c=xi, loc=0.0, scale=scale, size=n, random_state=rng),
+        dtype=np.float64,
+    )

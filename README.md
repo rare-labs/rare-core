@@ -52,20 +52,26 @@ pip install -e ".[dev]"
 
 ## Quick start
 
-> Extraction and GEV/GPD MLE are available. Return levels and bootstrap follow in later phases.
+> Extraction, GEV/GPD MLE, return levels, bootstrap CIs, and diagnostics are available.
 
 ```python
 import numpy as np
-from evt import extract_block_maxima, fit_gev, make_extreme_series
+from evt import (
+    bootstrap_return_levels,
+    extract_block_maxima,
+    fit_gev,
+    gev_return_level,
+    make_extreme_series,
+)
 
 values = np.load("data/observations.npy")  # float64 1-D array
 series = make_extreme_series(values, tail="high")
 sample = extract_block_maxima(series, block_size=365, min_blocks=20)
 fit = fit_gev(sample)
-print(fit.location, fit.scale, fit.shape, fit.aic)
+rl = gev_return_level(fit, return_period=10.0)
+ci = bootstrap_return_levels(sample, fit, [10.0], n_samples=500, seed=42)[0]
+print(rl.estimate, ci.lower, ci.upper)
 ```
-
-Return levels and bootstrap land in later phases. See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
 ## Conventions
 

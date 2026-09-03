@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from evt.types import Tail
+from evt.types import ExtremeSample, Tail
 from evt.validate import immutable_float64, validate_tail
 
 
@@ -30,3 +30,17 @@ def transform_threshold(threshold: float, tail: Tail) -> float:
     if tail == "low":
         return float(-threshold)
     return float(threshold)
+
+
+def infer_tail(sample: ExtremeSample) -> Tail:
+    """Recover tail from raw vs transformed values (low tail is exact negation)."""
+    raw = sample.raw_values
+    transformed = sample.transformed_values
+    if raw.size > 0 and np.allclose(transformed, -raw) and not np.allclose(transformed, raw):
+        return "low"
+    return "high"
+
+
+def inverse_transform_scalar(value: float, tail: str) -> float:
+    mapped = inverse_transform_from_upper_tail(np.asarray([value], dtype=np.float64), tail)
+    return float(mapped[0])

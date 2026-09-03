@@ -102,10 +102,10 @@ ruff check .
 
 ### Tasks
 
-- [ ] `return_levels.py`
-- [ ] Inverse tail mapping for low-tail series
-- [ ] `tests/unit/test_return_levels.py` — analytic cross-checks
-- [ ] `tests/integration/test_gev_pipeline.py` (partial)
+- [x] `return_levels.py`
+- [x] Inverse tail mapping for low-tail series
+- [x] `tests/unit/test_return_levels.py` — analytic cross-checks
+- [x] `tests/integration/test_gev_pipeline.py` (partial)
 
 ### Exit criteria
 
@@ -120,10 +120,10 @@ ruff check .
 
 ### Tasks
 
-- [ ] `bootstrap.py`
-- [ ] `diagnostics.py`
-- [ ] `tests/unit/test_bootstrap.py` — same seed → same CI
-- [ ] `tests/unit/test_diagnostics.py`
+- [x] `bootstrap.py`
+- [x] `diagnostics.py`
+- [x] `tests/unit/test_bootstrap.py` — same seed → same CI
+- [x] `tests/unit/test_diagnostics.py`
 
 ### Exit criteria
 
