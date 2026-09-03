@@ -4,7 +4,7 @@ Lightweight, Python-native **stationary univariate extreme-value analysis** engi
 
 Install **`rare-core`**. Import the public API as **`evt`**.
 
-**Status:** V0.1 specification and scaffold. Implementation in progress.
+**Status:** V0.1.0 — stationary BM/POT engine with GEV/GPD MLE, return levels, bootstrap CIs, diagnostics, and golden-fixture validation.
 
 ## Quick links
 
@@ -102,7 +102,7 @@ rare-core/
 
 ```bash
 pytest
-ruff check src tests
+ruff check src tests validation
 mypy src/evt
 ```
 
@@ -110,7 +110,8 @@ Reference validation (optional, requires Julia + pyextremes):
 
 ```bash
 pip install -e ".[reference]"
-# See validation/README.md when available
+python -m validation.run_pyextremes
+# See validation/README.md for Extremes.jl
 ```
 
 ## Validation

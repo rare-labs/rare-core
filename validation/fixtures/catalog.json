@@ -1,0 +1,81 @@
+{
+  "fixtures": [
+    {
+      "name": "gev_n15_xi-0.3",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n15_xi0",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n30_xi-0.01",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n30_xi0",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n30_xi0.01",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n30_xi0.3",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n100_xi-0.3",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n100_xi0",
+      "model": "GEV"
+    },
+    {
+      "name": "gev_n100_xi0.3",
+      "model": "GEV"
+    },
+    {
+      "name": "gpd_n15_xi-0.3",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n15_xi0",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n30_xi-0.01",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n30_xi0",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n30_xi0.01",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n30_xi0.3",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n100_xi-0.3",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n100_xi0",
+      "model": "GPD"
+    },
+    {
+      "name": "gpd_n100_xi0.3",
+      "model": "GPD"
+    },
+    {
+      "name": "pot_declustered_run",
+      "model": "GPD",
+      "notes": "run declustering reduces exceedance count versus n_source"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "model": "GEV",
+  "fit": {
+    "schema_version": "0.1",
+    "type": "GEVFit",
+    "location": 9.90581701332311,
+    "scale": 1.8210644538826117,
+    "shape": -0.2786783470063773,
+    "log_likelihood": -201.9075128119095,
+    "aic": 409.815025623819,
+    "n_extremes": 100,
+    "converged": true
+  },
+  "return_levels": {
+    "2": 10.540306050105517,
+    "10": 12.950156784773771,
+    "50": 14.23765648189831
+  },
+  "log_likelihood": -201.9075128119095,
+  "true_params": {
+    "location": 10.0,
+    "scale": 2.0,
+    "shape": -0.3
+  }
+}

@@ -138,14 +138,14 @@ ruff check .
 
 ### Tasks
 
-- [ ] `validation/generate_fixtures.py` — inverse-CDF only
-- [ ] `validation/fixtures/samples/*.json`
-- [ ] `validation/run_pyextremes.py`
-- [ ] `validation/run_extremes_jl.jl`
-- [ ] `validation/compare.py`
-- [ ] `validation/README.md`
-- [ ] `.github/workflows/reference.yml`
-- [ ] Commit reference snapshot JSON
+- [x] `validation/generate_fixtures.py` — inverse-CDF only
+- [x] `validation/fixtures/samples/*.json`
+- [x] `validation/run_pyextremes.py`
+- [x] `validation/run_extremes_jl.jl`
+- [x] `validation/compare.py`
+- [x] `validation/README.md`
+- [x] `.github/workflows/reference.yml`
+- [x] Commit reference snapshot JSON
 
 ### Exit criteria
 
@@ -160,10 +160,10 @@ ruff check .
 
 ### Tasks
 
-- [ ] Export stable API from `evt/__init__.py`
-- [ ] README quick start matches real signatures
-- [ ] `CHANGELOG.md` for 0.1.0
-- [ ] Tag `v0.1.0`
+- [x] Export stable API from `evt/__init__.py`
+- [x] README quick start matches real signatures
+- [x] `CHANGELOG.md` for 0.1.0
+- [x] Tag `v0.1.0`
 
 ### Exit criteria
 

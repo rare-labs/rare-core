@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "type": "ExtremeSample",
+  "raw_values": [
+    7.0,
+    9.0,
+    8.2
+  ],
+  "transformed_values": [
+    7.0,
+    9.0,
+    8.2
+  ],
+  "timestamps": [
+    946857600000000000,
+    947289600000000000,
+    947721600000000000
+  ],
+  "method": "POT",
+  "threshold": 5.0,
+  "excesses": [
+    2.0,
+    4.0,
+    3.1999999999999993
+  ],
+  "n_source": 14,
+  "exposure": 0.03559206023271732,
+  "exceedance_rate": 84.28846153846153
+}

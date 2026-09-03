@@ -435,11 +435,11 @@ Full schema definitions will live in `src/evt/serialize.py` docstrings as implem
 
 ## 9. Acceptance checklist (release gate)
 
-- [ ] All §1.1 capabilities implemented
-- [ ] All §1.2 items absent
-- [ ] Python ≥ 3.14; runtime deps NumPy + SciPy only
-- [ ] No silent input mutation
-- [ ] Explicit seeds on stochastic paths
-- [ ] Golden validation passes §6.4 tolerances
-- [ ] Public API documented in README and this spec
-- [ ] `AGENTS.md` and `ARCHITECTURE.md` aligned with implementation
+- [x] All §1.1 capabilities implemented
+- [x] All §1.2 items absent
+- [x] Python ≥ 3.14; runtime deps NumPy + SciPy only
+- [x] No silent input mutation
+- [x] Explicit seeds on stochastic paths
+- [x] Golden validation passes §6.4 tolerances
+- [x] Public API documented in README and this spec
+- [x] `AGENTS.md` and `ARCHITECTURE.md` aligned with implementation

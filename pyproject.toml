@@ -31,8 +31,7 @@ dev = [
 ]
 reference = [
     # Optional; used only by validation/reference scripts, not runtime.
-    # Pin when reference runner is added:
-    # "pyextremes @ git+https://github.com/georgebv/pyextremes@81f943e15f4f06246dc0870a14aa3915398d0e6d",
+    "pyextremes @ git+https://github.com/georgebv/pyextremes@81f943e15f4f06246dc0870a14aa3915398d0e6d",
 ]
 
 [project.urls]
@@ -52,6 +51,10 @@ src = ["src", "tests", "validation"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"validation/generate_fixtures.py" = ["E402"]
+"validation/compare.py" = ["E402"]
 
 [tool.mypy]
 python_version = "3.14"

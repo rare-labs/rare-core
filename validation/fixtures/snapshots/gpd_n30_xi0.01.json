@@ -1,0 +1,24 @@
+{
+  "model": "GPD",
+  "fit": {
+    "schema_version": "0.1",
+    "type": "GPDFit",
+    "scale": 2.223373251414545,
+    "shape": -0.3102399360726856,
+    "log_likelihood": -44.66358359972027,
+    "aic": 93.32716719944054,
+    "n_extremes": 30,
+    "converged": true
+  },
+  "return_levels": {
+    "2": 2.5050612249919686,
+    "10": 4.337297461693428,
+    "50": 5.449369852145162
+  },
+  "log_likelihood": -44.66358359972027,
+  "true_params": {
+    "location": null,
+    "scale": 1.5,
+    "shape": 0.01
+  }
+}
