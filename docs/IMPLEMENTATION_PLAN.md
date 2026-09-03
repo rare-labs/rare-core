@@ -81,12 +81,12 @@ ruff check .
 
 ### Tasks
 
-- [ ] `fit/scipy_adapter.py` — **only** SciPy `fit` calls
-- [ ] `likelihood.py`
-- [ ] `fit/gev.py`, `fit/gpd.py`
-- [ ] `tests/unit/test_scipy_adapter.py` — xi/c translation
-- [ ] `tests/unit/test_likelihood.py`
-- [ ] `tests/unit/test_fit.py`
+- [x] `fit/scipy_adapter.py` — **only** SciPy `fit` calls
+- [x] `likelihood.py`
+- [x] `fit/gev.py`, `fit/gpd.py`
+- [x] `tests/unit/test_scipy_adapter.py` — xi/c translation
+- [x] `tests/unit/test_likelihood.py`
+- [x] `tests/unit/test_fit.py`
 
 ### Exit criteria
 

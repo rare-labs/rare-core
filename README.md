@@ -52,18 +52,20 @@ pip install -e ".[dev]"
 
 ## Quick start
 
-> API below reflects the V0.1 target. Implementation lands in Phase 3–5 of the [implementation plan](docs/IMPLEMENTATION_PLAN.md).
+> Extraction and GEV/GPD MLE are available. Return levels and bootstrap follow in later phases.
 
 ```python
 import numpy as np
-from evt import extract_block_maxima, make_extreme_series
+from evt import extract_block_maxima, fit_gev, make_extreme_series
 
 values = np.load("data/observations.npy")  # float64 1-D array
 series = make_extreme_series(values, tail="high")
 sample = extract_block_maxima(series, block_size=365, min_blocks=20)
+fit = fit_gev(sample)
+print(fit.location, fit.scale, fit.shape, fit.aic)
 ```
 
-Fitting, return levels, and bootstrap land in later phases. See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
+Return levels and bootstrap land in later phases. See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
 ## Conventions
 

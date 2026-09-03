@@ -14,6 +14,7 @@ from evt.errors import (
     ValidationError,
 )
 from evt.extract import extract_block_maxima, extract_peaks_over_threshold
+from evt.fit import fit_gev, fit_gpd
 from evt.serialize import from_dict, to_dict
 from evt.series import make_extreme_series
 from evt.transform import inverse_transform_from_upper_tail, transform_to_upper_tail
@@ -41,6 +42,8 @@ __all__ = [
     "ExtremeSample",
     "ExtremeSeries",
     "FitError",
+    "fit_gev",
+    "fit_gpd",
     "from_dict",
     "inverse_transform_from_upper_tail",
     "make_extreme_series",
