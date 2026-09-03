@@ -29,7 +29,16 @@ class EVTError(Exception):
 
     def __init__(self, message: str, *, code: ErrorCode | str) -> None:
         super().__init__(message)
-        self.code = ErrorCode(code)
+        if isinstance(code, ErrorCode):
+            self.code = code
+            return
+        try:
+            self.code = ErrorCode(code)
+        except ValueError as exc:
+            raise EVTError(
+                f"unknown error code {code!r}",
+                code=ErrorCode.INVALID_PAYLOAD,
+            ) from exc
 
 
 class ValidationError(EVTError):

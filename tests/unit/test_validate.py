@@ -7,10 +7,12 @@ from evt.constants import GEV_MIN_SAMPLE, GPD_MIN_SAMPLE
 from evt.errors import (
     BootstrapError,
     ErrorCode,
+    EVTError,
     ExtractionError,
     FitError,
     ValidationError,
 )
+from evt.series import make_extreme_series
 from evt.types import ExtremeSample
 from evt.validate import (
     validate_fit_sample_size,
@@ -89,6 +91,18 @@ def test_invalid_shape_empty() -> None:
 def test_invalid_shape_non_numeric() -> None:
     with pytest.raises(ValidationError) as exc:
         validate_series(["a", "b"], None, "high")
+    assert exc.value.code == ErrorCode.INVALID_SHAPE
+
+
+def test_complex_values_rejected() -> None:
+    with pytest.raises(ValidationError) as exc:
+        validate_series(np.array([1 + 2j, 3 + 4j]), None, "high")
+    assert exc.value.code == ErrorCode.INVALID_SHAPE
+
+
+def test_bool_values_rejected() -> None:
+    with pytest.raises(ValidationError) as exc:
+        validate_series(np.array([True, False]), None, "high")
     assert exc.value.code == ErrorCode.INVALID_SHAPE
 
 
@@ -226,6 +240,42 @@ def test_missing_pot_return_level_metadata() -> None:
 
 def test_pot_return_level_metadata_ok() -> None:
     validate_pot_return_level_metadata(_pot_sample())
+
+
+def test_pot_return_level_rejects_non_positive_rate() -> None:
+    sample = ExtremeSample(
+        raw_values=np.array([5.0, 6.0], dtype=np.float64),
+        transformed_values=np.array([5.0, 6.0], dtype=np.float64),
+        timestamps=None,
+        method="POT",
+        threshold=4.0,
+        excesses=np.array([1.0, 2.0], dtype=np.float64),
+        n_source=20,
+        exposure=1.0,
+        exceedance_rate=0.0,
+    )
+    with pytest.raises(ValidationError) as exc:
+        validate_pot_return_level_metadata(sample)
+    assert exc.value.code == ErrorCode.INVALID_SHAPE
+
+
+def test_unknown_error_code_is_evt_error() -> None:
+    with pytest.raises(EVTError) as exc:
+        ValidationError("x", code="NOT_A_CODE")
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
+
+
+def test_make_extreme_series_arrays_are_not_writeable() -> None:
+    series = make_extreme_series([1.0, 2.0], tail="high")
+    assert not series.values.flags.writeable
+    with pytest.raises(ValueError):
+        series.values[0] = 99.0
+
+
+def test_fit_sample_size_rejects_unknown_model() -> None:
+    with pytest.raises(FitError) as exc:
+        validate_fit_sample_size(10, model="gev")  # type: ignore[arg-type]
+    assert exc.value.code == ErrorCode.INVALID_SAMPLE
 
 
 @pytest.mark.parametrize(

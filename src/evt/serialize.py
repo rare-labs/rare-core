@@ -8,18 +8,26 @@ Every payload includes ``schema_version`` (from ``constants.SCHEMA_VERSION``)
 and ``type`` (the dataclass name).
 """
 
-from dataclasses import fields, is_dataclass
+from dataclasses import fields, is_dataclass, replace
+from math import isfinite
 from types import UnionType
-from typing import Any, TypeAliasType, Union, cast, get_args, get_origin, get_type_hints
+from typing import Any, Literal, TypeAliasType, Union, cast, get_args, get_origin, get_type_hints
 
 import numpy as np
 
 from evt.constants import SCHEMA_VERSION
 from evt.errors import ErrorCode, SerializationError
-from evt.types import MODEL_TYPES
+from evt.series import make_extreme_series
+from evt.types import MODEL_TYPES, DiagnosticResult, ExtremeSample, ExtremeSeries
+from evt.validate import (
+    immutable_datetime64_ns,
+    immutable_float64,
+    validate_sample,
+)
 
 _TYPE_BY_NAME: dict[str, type] = {cls.__name__: cls for cls in MODEL_TYPES}
 _TIMESTAMP_FIELDS = frozenset({"timestamps"})
+_REAL_NUMERIC_KINDS = frozenset("iuf")
 
 
 def _resolve_hint(hint: object) -> object:
@@ -33,18 +41,52 @@ def _resolve_hint(hint: object) -> object:
     return hint
 
 
+def _encode_array(value: np.ndarray) -> list[object]:
+    if value.ndim != 1:
+        raise SerializationError(
+            "arrays must be 1-D",
+            code=ErrorCode.INVALID_PAYLOAD,
+        )
+    if value.dtype.kind == "M":
+        as_ns = np.array(value, dtype="datetime64[ns]", copy=True)
+        return [int(np.datetime64(item, "ns").view(np.int64)) for item in as_ns]
+    if value.dtype.kind not in _REAL_NUMERIC_KINDS or np.iscomplexobj(value):
+        raise SerializationError(
+            "arrays must be real numeric or datetime64",
+            code=ErrorCode.INVALID_PAYLOAD,
+        )
+    floats = np.array(value, dtype=np.float64, copy=True)
+    if not np.all(np.isfinite(floats)):
+        raise SerializationError(
+            "arrays must contain only finite values",
+            code=ErrorCode.INVALID_PAYLOAD,
+        )
+    return [float(item) for item in floats]
+
+
 def _encode(value: object) -> object:
     if value is None:
         return None
     if isinstance(value, np.ndarray):
-        if value.dtype.kind == "M":
-            as_ns = value.astype("datetime64[ns]", copy=False)
-            return [int(np.datetime64(item, "ns").view(np.int64)) for item in as_ns]
-        return [float(item) for item in np.asarray(value, dtype=np.float64)]
+        try:
+            return _encode_array(value)
+        except SerializationError:
+            raise
+        except (TypeError, ValueError) as exc:
+            raise SerializationError(
+                "cannot encode array",
+                code=ErrorCode.INVALID_PAYLOAD,
+            ) from exc
     if isinstance(value, np.bool_ | bool):
         return bool(value)
     if isinstance(value, np.floating | float):
-        return float(value)
+        encoded = float(value)
+        if not isfinite(encoded):
+            raise SerializationError(
+                "numeric fields must be finite",
+                code=ErrorCode.INVALID_PAYLOAD,
+            )
+        return encoded
     if isinstance(value, np.integer | int):
         return int(value)
     if isinstance(value, str):
@@ -55,19 +97,35 @@ def _encode(value: object) -> object:
     )
 
 
+def _require_json_number_list(raw: list[object], *, name: str) -> None:
+    for item in raw:
+        if isinstance(item, bool) or not isinstance(item, int | float):
+            raise SerializationError(
+                f"{name} must be a list of numbers",
+                code=ErrorCode.INVALID_PAYLOAD,
+            )
+
+
 def _decode_float_array(raw: object, *, name: str) -> np.ndarray:
     if not isinstance(raw, list):
         raise SerializationError(
             f"{name} must be a list of numbers",
             code=ErrorCode.INVALID_PAYLOAD,
         )
+    _require_json_number_list(raw, name=name)
     try:
-        return np.asarray(raw, dtype=np.float64)
+        array = np.asarray(raw, dtype=np.float64)
     except (TypeError, ValueError) as exc:
         raise SerializationError(
             f"{name} must be a list of numbers",
             code=ErrorCode.INVALID_PAYLOAD,
         ) from exc
+    if array.ndim != 1:
+        raise SerializationError(
+            f"{name} must be a 1-D list of numbers",
+            code=ErrorCode.INVALID_PAYLOAD,
+        )
+    return immutable_float64(array)
 
 
 def _decode_timestamps(raw: object, *, name: str) -> np.ndarray:
@@ -76,6 +134,12 @@ def _decode_timestamps(raw: object, *, name: str) -> np.ndarray:
             f"{name} must be a list of integer nanoseconds",
             code=ErrorCode.INVALID_PAYLOAD,
         )
+    for item in raw:
+        if isinstance(item, bool) or not isinstance(item, int):
+            raise SerializationError(
+                f"{name} must be a list of integer nanoseconds",
+                code=ErrorCode.INVALID_PAYLOAD,
+            )
     try:
         ints = np.asarray(raw, dtype=np.int64)
     except (TypeError, ValueError) as exc:
@@ -83,7 +147,12 @@ def _decode_timestamps(raw: object, *, name: str) -> np.ndarray:
             f"{name} must be a list of integer nanoseconds",
             code=ErrorCode.INVALID_PAYLOAD,
         ) from exc
-    return ints.astype("datetime64[ns]", copy=False)
+    if ints.ndim != 1:
+        raise SerializationError(
+            f"{name} must be a 1-D list of integer nanoseconds",
+            code=ErrorCode.INVALID_PAYLOAD,
+        )
+    return immutable_datetime64_ns(ints.astype("datetime64[ns]", copy=False))
 
 
 def _decode_field(name: str, raw: object, hint: object) -> object:
@@ -91,6 +160,14 @@ def _decode_field(name: str, raw: object, hint: object) -> object:
         return None
     core = _resolve_hint(hint)
     origin = get_origin(core)
+    if origin is Literal:
+        allowed = get_args(core)
+        if raw not in allowed:
+            raise SerializationError(
+                f"{name} must be one of {allowed}",
+                code=ErrorCode.INVALID_PAYLOAD,
+            )
+        return raw
     if core is np.ndarray or name in _TIMESTAMP_FIELDS:
         if name in _TIMESTAMP_FIELDS:
             return _decode_timestamps(raw, name=name)
@@ -101,7 +178,13 @@ def _decode_field(name: str, raw: object, hint: object) -> object:
                 f"{name} must be a number",
                 code=ErrorCode.INVALID_PAYLOAD,
             )
-        return float(raw)
+        encoded = float(raw)
+        if not isfinite(encoded):
+            raise SerializationError(
+                f"{name} must be finite",
+                code=ErrorCode.INVALID_PAYLOAD,
+            )
+        return encoded
     if core is int:
         if not isinstance(raw, int) or isinstance(raw, bool):
             raise SerializationError(
@@ -116,7 +199,7 @@ def _decode_field(name: str, raw: object, hint: object) -> object:
                 code=ErrorCode.INVALID_PAYLOAD,
             )
         return raw
-    if core is str or origin is not None:
+    if core is str:
         if not isinstance(raw, str):
             raise SerializationError(
                 f"{name} must be a string",
@@ -126,6 +209,30 @@ def _decode_field(name: str, raw: object, hint: object) -> object:
     raise SerializationError(
         f"unsupported field type for {name}",
         code=ErrorCode.INVALID_PAYLOAD,
+    )
+
+
+def _owned_sample(sample: ExtremeSample) -> ExtremeSample:
+    timestamps = (
+        None if sample.timestamps is None else immutable_datetime64_ns(sample.timestamps)
+    )
+    excesses = None if sample.excesses is None else immutable_float64(sample.excesses)
+    return replace(
+        sample,
+        raw_values=immutable_float64(sample.raw_values),
+        transformed_values=immutable_float64(sample.transformed_values),
+        timestamps=timestamps,
+        excesses=excesses,
+    )
+
+
+def _owned_diagnostics(result: DiagnosticResult) -> DiagnosticResult:
+    return replace(
+        result,
+        qq_empirical=immutable_float64(result.qq_empirical),
+        qq_model=immutable_float64(result.qq_model),
+        pp_empirical=immutable_float64(result.pp_empirical),
+        pp_model=immutable_float64(result.pp_model),
     )
 
 
@@ -176,4 +283,14 @@ def from_dict[T](data: dict[str, Any], type_hint: type[T]) -> T:
                 code=ErrorCode.INVALID_PAYLOAD,
             )
         kwargs[field.name] = _decode_field(field.name, data[field.name], hints[field.name])
-    return cast(T, cls(**kwargs))
+    obj = cls(**kwargs)
+    if type_hint is ExtremeSeries:
+        series = cast(ExtremeSeries, obj)
+        return cast(T, make_extreme_series(series.values, series.timestamps, series.tail))
+    if type_hint is ExtremeSample:
+        sample = cast(ExtremeSample, obj)
+        validate_sample(sample)
+        return cast(T, _owned_sample(sample))
+    if type_hint is DiagnosticResult:
+        return cast(T, _owned_diagnostics(cast(DiagnosticResult, obj)))
+    return cast(T, obj)

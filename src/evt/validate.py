@@ -10,17 +10,31 @@ from evt.errors import ErrorCode, FitError, ValidationError
 from evt.types import ExtremeSample, Tail
 
 _TAILS: frozenset[str] = frozenset({"high", "low"})
+_FIT_MIN_SAMPLE: dict[str, int] = {"GEV": GEV_MIN_SAMPLE, "GPD": GPD_MIN_SAMPLE}
+# Integer, unsigned, and floating — not bool ('b') or complex ('c').
+_REAL_NUMERIC_KINDS = frozenset("iuf")
+
+
+def _require_real_numeric(array: np.ndarray, *, name: str) -> None:
+    """Reject bool/complex/object before any float64 cast (which would truncate)."""
+    if array.dtype.kind not in _REAL_NUMERIC_KINDS or np.iscomplexobj(array):
+        raise ValidationError(
+            f"{name} must be a real numeric array",
+            code=ErrorCode.INVALID_SHAPE,
+        )
 
 
 def _as_float64_1d(values: ArrayLike, *, name: str) -> np.ndarray:
-    """Copy/coerce to float64 for inspection only; does not write back to ``values``."""
+    """Owned float64 copy for inspection only; does not write back to ``values``."""
     try:
-        array = np.asarray(values, dtype=np.float64)
+        raw = np.asarray(values)
     except (TypeError, ValueError) as exc:
         raise ValidationError(
             f"{name} must be a numeric array",
             code=ErrorCode.INVALID_SHAPE,
         ) from exc
+    _require_real_numeric(raw, name=name)
+    array = np.array(raw, dtype=np.float64, copy=True)
     if array.ndim != 1 or array.size == 0:
         raise ValidationError(
             f"{name} must be a non-empty 1-D array",
@@ -46,7 +60,7 @@ def _as_datetime64_ns_1d(timestamps: ArrayLike, *, name: str = "timestamps") -> 
             f"{name} must be a 1-D array",
             code=ErrorCode.INVALID_SHAPE,
         )
-    converted = array.astype("datetime64[ns]", copy=False)
+    converted = np.array(array, dtype="datetime64[ns]", copy=True)
     if np.any(np.isnat(converted)):
         raise ValidationError(
             f"{name} contains non-finite values",
@@ -171,10 +185,25 @@ def validate_pot_return_level_metadata(sample: ExtremeSample) -> None:
             "GPD return levels require POT threshold and exceedance_rate",
             code=ErrorCode.MISSING_POT_METADATA,
         )
+    if not np.isfinite(sample.threshold):
+        raise ValidationError(
+            "threshold must be finite",
+            code=ErrorCode.NON_FINITE_VALUES,
+        )
+    if not np.isfinite(sample.exceedance_rate) or sample.exceedance_rate <= 0.0:
+        raise ValidationError(
+            "exceedance_rate must be finite and positive",
+            code=ErrorCode.INVALID_SHAPE,
+        )
 
 
 def validate_fit_sample_size(n: int, *, model: Literal["GEV", "GPD"]) -> None:
-    minimum = GEV_MIN_SAMPLE if model == "GEV" else GPD_MIN_SAMPLE
+    minimum = _FIT_MIN_SAMPLE.get(model)
+    if minimum is None:
+        raise FitError(
+            "model must be 'GEV' or 'GPD'",
+            code=ErrorCode.INVALID_SAMPLE,
+        )
     if n < minimum:
         raise FitError(
             f"{model} fit requires n >= {minimum}",
@@ -184,13 +213,21 @@ def validate_fit_sample_size(n: int, *, model: Literal["GEV", "GPD"]) -> None:
 
 def immutable_float64(values: ArrayLike) -> np.ndarray:
     """Owned float64 copy that cannot be written (does not mutate ``values``)."""
-    array = np.array(values, dtype=np.float64, copy=True)
+    raw = np.asarray(values)
+    _require_real_numeric(raw, name="values")
+    array = np.array(raw, dtype=np.float64, copy=True)
     array.setflags(write=False)
     return array
 
 
 def immutable_datetime64_ns(timestamps: ArrayLike) -> np.ndarray:
     """Owned datetime64[ns] copy that cannot be written."""
-    array = np.asarray(timestamps).astype("datetime64[ns]", copy=True)
+    raw = np.asarray(timestamps)
+    if raw.dtype.kind != "M":
+        raise ValidationError(
+            "timestamps must have datetime64 dtype",
+            code=ErrorCode.INVALID_SHAPE,
+        )
+    array = np.array(raw, dtype="datetime64[ns]", copy=True)
     array.setflags(write=False)
     return array

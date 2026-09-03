@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from evt.constants import SCHEMA_VERSION
-from evt.errors import ErrorCode, SerializationError
+from evt.errors import ErrorCode, SerializationError, ValidationError
 from evt.serialize import from_dict, to_dict
 from evt.types import (
     MODEL_TYPES,
@@ -202,3 +202,80 @@ def test_series_without_timestamps() -> None:
     assert isinstance(restored, ExtremeSeries)
     assert restored.timestamps is None
     assert restored.tail == "low"
+
+
+def test_from_dict_rejects_2d_values() -> None:
+    payload = to_dict(_series())
+    payload["values"] = [[1.0, 2.0], [3.0, 4.0]]
+    with pytest.raises(SerializationError) as exc:
+        from_dict(payload, ExtremeSeries)
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
+
+
+def test_from_dict_rejects_empty_values() -> None:
+    payload = to_dict(_series())
+    payload["values"] = []
+    payload["timestamps"] = None
+    with pytest.raises(ValidationError) as exc:
+        from_dict(payload, ExtremeSeries)
+    assert exc.value.code == ErrorCode.INVALID_SHAPE
+
+
+def test_from_dict_rejects_illegal_tail() -> None:
+    payload = to_dict(_series())
+    payload["tail"] = "sideways"
+    with pytest.raises(SerializationError) as exc:
+        from_dict(payload, ExtremeSeries)
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
+
+
+def test_from_dict_rejects_illegal_method() -> None:
+    payload = to_dict(_bm_sample())
+    payload["method"] = "block"
+    with pytest.raises(SerializationError) as exc:
+        from_dict(payload, ExtremeSample)
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
+
+
+def test_from_dict_rejects_truncated_timestamp_floats() -> None:
+    payload = to_dict(_series())
+    payload["timestamps"] = [1.9, 2.9, 3.9]
+    with pytest.raises(SerializationError) as exc:
+        from_dict(payload, ExtremeSeries)
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
+
+
+def test_from_dict_series_arrays_are_not_writeable() -> None:
+    restored = from_dict(to_dict(_series()), ExtremeSeries)
+    assert not restored.values.flags.writeable
+    assert restored.timestamps is not None
+    assert not restored.timestamps.flags.writeable
+
+
+def test_to_dict_rejects_0d_array() -> None:
+    series = ExtremeSeries(values=np.array(1.0), timestamps=None, tail="high")
+    with pytest.raises(SerializationError) as exc:
+        to_dict(series)
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
+
+
+def test_to_dict_rejects_complex_array() -> None:
+    series = ExtremeSeries(values=np.array([1 + 2j]), timestamps=None, tail="high")
+    with pytest.raises(SerializationError) as exc:
+        to_dict(series)
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
+
+
+def test_to_dict_rejects_non_finite_scalar() -> None:
+    fit = GEVFit(
+        location=float("nan"),
+        scale=0.45,
+        shape=0.1,
+        log_likelihood=-12.34,
+        aic=30.68,
+        n_extremes=50,
+        converged=True,
+    )
+    with pytest.raises(SerializationError) as exc:
+        to_dict(fit)
+    assert exc.value.code == ErrorCode.INVALID_PAYLOAD
