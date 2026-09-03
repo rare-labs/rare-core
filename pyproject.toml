@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rare-core"
+version = "0.1.0"
+description = "rare-core: lightweight Python-native stationary extreme-value analysis engine"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14"
+authors = [{ name = "rare-labs" }]
+keywords = ["extreme-value-theory", "GEV", "GPD", "statistics", "block-maxima", "peaks-over-threshold"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy>=2.3",
+    "scipy>=1.16",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4",
+    "ruff>=0.12",
+    "mypy>=1.17",
+]
+reference = [
+    # Optional; used only by validation/reference scripts, not runtime.
+    # Pin when reference runner is added:
+    # "pyextremes @ git+https://github.com/georgebv/pyextremes@81f943e15f4f06246dc0870a14aa3915398d0e6d",
+]
+
+[project.urls]
+Documentation = "https://github.com/rare-labs/rare-core#readme"
+Repository = "https://github.com/rare-labs/rare-core"
+Issues = "https://github.com/rare-labs/rare-core/issues"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+src = ["src", "tests", "validation"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+packages = ["evt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
