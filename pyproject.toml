@@ -40,6 +40,11 @@ Documentation = "https://github.com/rare-labs/rare-core#readme"
 Repository = "https://github.com/rare-labs/rare-core"
 Issues = "https://github.com/rare-labs/rare-core/issues"
 
+# Project name rare-core does not match the import package evt; map it explicitly
+# so wheels and editable installs ship src/evt instead of looking for rare_core.
+[tool.hatch.build.targets.wheel]
+packages = ["src/evt"]
+
 [tool.ruff]
 target-version = "py314"
 line-length = 100

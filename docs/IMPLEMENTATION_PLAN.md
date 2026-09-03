@@ -37,12 +37,12 @@ ruff check .
 
 ### Tasks
 
-- [ ] `types.py` — all dataclasses from [SPEC.md](SPEC.md) §3
-- [ ] `errors.py` — hierarchy + stable codes (SPEC §7)
-- [ ] `validate.py` — series and array validators
-- [ ] `serialize.py` — `to_dict` / `from_dict`, `schema_version`
-- [ ] `tests/unit/test_validate.py`
-- [ ] `tests/unit/test_serialize.py`
+- [x] `types.py` — all dataclasses from [SPEC.md](SPEC.md) §3
+- [x] `errors.py` — hierarchy + stable codes (SPEC §7)
+- [x] `validate.py` — series and array validators
+- [x] `serialize.py` — `to_dict` / `from_dict`, `schema_version`
+- [x] `tests/unit/test_validate.py`
+- [x] `tests/unit/test_serialize.py`
 
 ### Exit criteria
 
