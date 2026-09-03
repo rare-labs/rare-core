@@ -66,7 +66,7 @@ is intended.
 ### Optional cross-library references
 
 ```bash
-pip install -e ".[reference]"
+pip install -r validation/requirements-reference.txt
 python -m validation.run_pyextremes
 ```
 

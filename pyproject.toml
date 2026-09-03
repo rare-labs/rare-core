@@ -29,10 +29,6 @@ dev = [
     "ruff>=0.12",
     "mypy>=1.17",
 ]
-reference = [
-    # Optional; used only by validation/reference scripts, not runtime.
-    "pyextremes @ git+https://github.com/georgebv/pyextremes@81f943e15f4f06246dc0870a14aa3915398d0e6d",
-]
 
 [project.urls]
 Documentation = "https://github.com/rare-labs/rare-core#readme"

@@ -109,7 +109,7 @@ mypy src/evt
 Reference validation (optional, requires Julia + pyextremes):
 
 ```bash
-pip install -e ".[reference]"
+pip install -r validation/requirements-reference.txt
 python -m validation.run_pyextremes
 # See validation/README.md for Extremes.jl
 ```

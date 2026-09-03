@@ -1,0 +1,3 @@
+# Optional. Not a runtime dependency of rare-core.
+# Hatchling/PyPI reject git URLs in project.optional-dependencies.
+pyextremes @ git+https://github.com/georgebv/pyextremes@81f943e15f4f06246dc0870a14aa3915398d0e6d

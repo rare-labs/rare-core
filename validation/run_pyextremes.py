@@ -55,7 +55,10 @@ def main() -> int:
     try:
         from pyextremes import get_model
     except ImportError:
-        print("pyextremes is not installed. pip install -e '.[reference]'", file=sys.stderr)
+        print(
+            "pyextremes is not installed. pip install -r validation/requirements-reference.txt",
+            file=sys.stderr,
+        )
         return 2
 
     catalog = _load(CATALOG)
