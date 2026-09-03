@@ -57,15 +57,15 @@ ruff check .
 
 ### Tasks
 
-- [ ] `transform.py`
-- [ ] `extract/block.py`
-- [ ] `extract/pot.py`
-- [ ] `extract/decluster.py`
-- [ ] `series.py` — convenience constructor with validation
-- [ ] `tests/unit/test_transform.py`
-- [ ] `tests/unit/test_extract_block.py`
-- [ ] `tests/unit/test_extract_pot.py`
-- [ ] `tests/unit/test_decluster.py`
+- [x] `transform.py`
+- [x] `extract/block.py`
+- [x] `extract/pot.py`
+- [x] `extract/decluster.py`
+- [x] `series.py` — convenience constructor with validation
+- [x] `tests/unit/test_transform.py`
+- [x] `tests/unit/test_extract_block.py`
+- [x] `tests/unit/test_extract_pot.py`
+- [x] `tests/unit/test_decluster.py`
 
 ### Exit criteria
 

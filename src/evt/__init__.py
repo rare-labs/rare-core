@@ -13,7 +13,10 @@ from evt.errors import (
     SerializationError,
     ValidationError,
 )
+from evt.extract import extract_block_maxima, extract_peaks_over_threshold
 from evt.serialize import from_dict, to_dict
+from evt.series import make_extreme_series
+from evt.transform import inverse_transform_from_upper_tail, transform_to_upper_tail
 from evt.types import (
     DiagnosticResult,
     ExtremeSample,
@@ -32,16 +35,21 @@ __all__ = [
     "DiagnosticResult",
     "ErrorCode",
     "EVTError",
+    "extract_block_maxima",
+    "extract_peaks_over_threshold",
     "ExtractionError",
     "ExtremeSample",
     "ExtremeSeries",
     "FitError",
     "from_dict",
+    "inverse_transform_from_upper_tail",
+    "make_extreme_series",
     "GEVFit",
     "GPDFit",
     "ReturnLevelResult",
     "SerializationError",
     "to_dict",
+    "transform_to_upper_tail",
     "validate_series",
     "ValidationError",
 ]

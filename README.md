@@ -56,27 +56,14 @@ pip install -e ".[dev]"
 
 ```python
 import numpy as np
-from evt import (
-    ExtremeSeries,
-    extract_block_maxima,
-    fit_gev,
-    gev_return_level,
-    bootstrap_return_levels,
-)
+from evt import extract_block_maxima, make_extreme_series
 
 values = np.load("data/observations.npy")  # float64 1-D array
-series = ExtremeSeries(values=values, timestamps=None, tail="high")
-
+series = make_extreme_series(values, tail="high")
 sample = extract_block_maxima(series, block_size=365, min_blocks=20)
-fit = fit_gev(sample)
-
-rl_10 = gev_return_level(fit, return_period=10.0)
-rl_10_ci = bootstrap_return_levels(
-    sample, fit, return_periods=[10.0], n_samples=500, seed=42
-)[0]
-
-print(rl_10.estimate, rl_10_ci.lower, rl_10_ci.upper)
 ```
+
+Fitting, return levels, and bootstrap land in later phases. See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
 ## Conventions
 

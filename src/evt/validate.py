@@ -180,3 +180,17 @@ def validate_fit_sample_size(n: int, *, model: Literal["GEV", "GPD"]) -> None:
             f"{model} fit requires n >= {minimum}",
             code=ErrorCode.INSUFFICIENT_SAMPLE,
         )
+
+
+def immutable_float64(values: ArrayLike) -> np.ndarray:
+    """Owned float64 copy that cannot be written (does not mutate ``values``)."""
+    array = np.array(values, dtype=np.float64, copy=True)
+    array.setflags(write=False)
+    return array
+
+
+def immutable_datetime64_ns(timestamps: ArrayLike) -> np.ndarray:
+    """Owned datetime64[ns] copy that cannot be written."""
+    array = np.asarray(timestamps).astype("datetime64[ns]", copy=True)
+    array.setflags(write=False)
+    return array
